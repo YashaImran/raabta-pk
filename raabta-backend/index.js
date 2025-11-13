@@ -24,9 +24,9 @@ app.use(express.json());
 app.set('io', io);
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI);
-.then(() => console.log('✅ MongoDB Connected Successfully'))
-.catch(err => console.error('❌ MongoDB Connection Error:', err));
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('✅ MongoDB Connected Successfully'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // Socket.IO Connection
 io.on('connection', (socket) => {
