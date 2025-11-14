@@ -12,7 +12,7 @@ const createTestUser = async () => {
     const user = await User.create({
       name: 'Dr. Ahmed Khan',
       email: 'doctor@jpmc.com',
-      password: 'password123',
+      password: 'TestDoc@2025!',
       role: 'senior_registrar',
       department: 'General Surgery S21',
       phone: '0300-1234567',
