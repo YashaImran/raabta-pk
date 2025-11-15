@@ -2,7 +2,142 @@ import { useState, useEffect } from 'react';
 import { Phone, Users, FileText, Home, Clock, Bell, Send, Search, CheckCircle, AlertCircle, X, Menu, ChevronRight, Link2, MessageSquare, ThumbsDown, LogOut } from 'lucide-react';
 
 import api from './config/api';
+// RequestConsultation Component (moved outside for stable state)
+const RequestConsultation = ({ loggedInUser, departments, handleConsultationSubmit }) => {
+  const [formData, setFormData] = useState({
+    to_department: '',
+    patient_mrn: '',
+    urgency: 'routine',
+    clinical_question: ''
+  });
 
+  const allDepts = Object.values(departments).flat();
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    // Validate required fields
+    if (!formData.to_department || !formData.patient_mrn || !formData.clinical_question) {
+      alert('Please fill in all required fields (Department, MRN, and Clinical Question)');
+      return;
+    }
+
+    try {
+      // Submit consultation
+      await handleConsultationSubmit(formData);
+      
+      // Reset form after successful submission
+      setFormData({
+        to_department: '',
+        patient_mrn: '',
+        urgency: 'routine',
+        clinical_question: ''
+      });
+      
+      // Success message
+      alert('✅ Consultation request submitted successfully!');
+      
+    } catch (error) {
+      console.error('Error submitting consultation:', error);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl p-6 shadow-md">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Request Consultation</h2>
+      
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-2">From Department</label>
+          <input
+            type="text"
+            value={loggedInUser?.department || ''}
+            disabled
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-2">
+            To Department <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={formData.to_department}
+            onChange={(e) => setFormData({...formData, to_department: e.target.value})}
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="">Select department...</option>
+            {allDepts.map(dept => (
+              <option key={dept} value={dept}>{dept}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-2">
+            Patient MRN <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={formData.patient_mrn}
+            onChange={(e) => setFormData({...formData, patient_mrn: e.target.value})}
+            placeholder="Medical Record Number"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-2">Urgency Level</label>
+          <div className="flex gap-3">
+            {['stat', 'urgent', 'routine'].map(level => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setFormData({...formData, urgency: level})}
+                className={`flex-1 py-3 rounded-xl font-bold transition ${
+                  formData.urgency === level 
+                    ? level === 'stat' ? 'bg-red-500 text-white shadow-lg' :
+                      level === 'urgent' ? 'bg-orange-500 text-white shadow-lg' :
+                      'bg-emerald-500 text-white shadow-lg'
+                    : level === 'stat' ? 'bg-red-50 text-red-600 border-2 border-red-200' :
+                      level === 'urgent' ? 'bg-orange-50 text-orange-600 border-2 border-orange-200' :
+                      'bg-emerald-50 text-emerald-600 border-2 border-emerald-200'
+                }`}
+              >
+                {level.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-2">
+            Clinical Question <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            value={formData.clinical_question}
+            onChange={(e) => setFormData({...formData, clinical_question: e.target.value})}
+            placeholder="Describe the clinical situation and your question..."
+            rows="4"
+            maxLength="500"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 resize-none"
+          />
+          <div className="text-right text-sm text-gray-500 mt-1">
+            {formData.clinical_question.length}/500
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-bold hover:from-emerald-700 hover:to-teal-700 transition shadow-lg flex items-center justify-center gap-2"
+        >
+          <Send />
+          Submit Request
+        </button>
+      </div>
+    </div>
+  );
+};
 const RaabtaApp = () => {
   const [currentPage, setCurrentPage] = useState('login');
   const [loggedInUser, setLoggedInUser] = useState(null);
@@ -194,142 +329,7 @@ const handleConsultationSubmit = async (formData) => {
     </div>
   );
 
-const RequestConsultation = () => {
-  const [formData, setFormData] = useState({
-    to_department: '',
-    patient_mrn: '',
-    urgency: 'routine',
-    clinical_question: ''
-  });
 
-  const allDepts = Object.values(departments).flat();
-
-  // Handle form submission
-  const handleSubmit = async () => {
-    // Validate required fields
-    if (!formData.to_department || !formData.patient_mrn || !formData.clinical_question) {
-      alert('Please fill in all required fields (Department, MRN, and Clinical Question)');
-      return;
-    }
-
-    try {
-      // Submit consultation
-      await handleConsultationSubmit(formData);
-      
-      // Reset form after successful submission
-      setFormData({
-        to_department: '',
-        patient_mrn: '',
-        urgency: 'routine',
-        clinical_question: ''
-      });
-      
-      // Success message
-      alert('✅ Consultation request submitted successfully!');
-      
-    } catch (error) {
-      console.error('Error submitting consultation:', error);
-      // Error already shown by handleConsultationSubmit
-    }
-  };
-
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Request Consultation</h2>
-      
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">From Department</label>
-          <input
-            type="text"
-            value={loggedInUser?.department || ''}
-            disabled
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            To Department <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={formData.to_department}
-            onChange={(e) => setFormData({...formData, to_department: e.target.value})}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
-          >
-            <option value="">Select department...</option>
-            {allDepts.map(dept => (
-              <option key={dept} value={dept}>{dept}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Patient MRN <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.patient_mrn}
-            onChange={(e) => setFormData({...formData, patient_mrn: e.target.value})}
-            placeholder="Medical Record Number"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Urgency Level</label>
-          <div className="flex gap-3">
-            {['stat', 'urgent', 'routine'].map(level => (
-              <button
-                key={level}
-                type="button"
-                onClick={() => setFormData({...formData, urgency: level})}
-                className={`flex-1 py-3 rounded-xl font-bold transition ${
-                  formData.urgency === level 
-                    ? level === 'stat' ? 'bg-red-500 text-white shadow-lg' :
-                      level === 'urgent' ? 'bg-orange-500 text-white shadow-lg' :
-                      'bg-emerald-500 text-white shadow-lg'
-                    : level === 'stat' ? 'bg-red-50 text-red-600 border-2 border-red-200' :
-                      level === 'urgent' ? 'bg-orange-50 text-orange-600 border-2 border-orange-200' :
-                      'bg-emerald-50 text-emerald-600 border-2 border-emerald-200'
-                }`}
-              >
-                {level.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">
-            Clinical Question <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={formData.clinical_question}
-            onChange={(e) => setFormData({...formData, clinical_question: e.target.value})}
-            placeholder="Describe the clinical situation and your question..."
-            rows="4"
-            maxLength="500"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 resize-none"
-          />
-          <div className="text-right text-sm text-gray-500 mt-1">
-            {formData.clinical_question.length}/500
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-bold hover:from-emerald-700 hover:to-teal-700 transition shadow-lg flex items-center justify-center gap-2"
-        >
-          <Send />
-          Submit Request
-        </button>
-      </div>
-    </div>
-  );
-};
 
   const OnCallDirectory = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -946,7 +946,13 @@ const RequestConsultation = () => {
 
           <main className="flex-1 pb-20 md:pb-6">
             {currentPage === 'dashboard' && <Dashboard />}
-            {currentPage === 'request' && <RequestConsultation />}
+            {currentPage === 'request' && (
+  <RequestConsultation 
+    loggedInUser={loggedInUser}
+    departments={departments}
+    handleConsultationSubmit={handleConsultationSubmit}
+  />
+)}
             {currentPage === 'oncall' && <OnCallDirectory />}
             {currentPage === 'consultations' && <MyConsultations />}
           </main>
