@@ -5,35 +5,35 @@ import api from './config/api';
 // RequestConsultation Component (moved outside for stable state)
 const RequestConsultation = ({ loggedInUser, departments, handleConsultationSubmit }) => {
   const [formData, setFormData] = useState({
-    to_department: '',
-    patient_mrn: '',
+    to: '',
+    mrn: '',
     urgency: 'routine',
-    clinical_question: ''
+    question: ''
   });
 
   const allDepts = Object.values(departments).flat();
 
-  // Handle form submission
   const handleSubmit = async () => {
-    // Validate required fields
-    if (!formData.to_department || !formData.patient_mrn || !formData.clinical_question) {
+    if (!formData.to || !formData.mrn || !formData.question) {
       alert('Please fill in all required fields (Department, MRN, and Clinical Question)');
       return;
     }
 
     try {
-      // Submit consultation
-      await handleConsultationSubmit(formData);
+      const submissionData = {
+        ...formData,
+        from: loggedInUser?.department
+      };
       
-      // Reset form after successful submission
+      await handleConsultationSubmit(submissionData);
+      
       setFormData({
-        to_department: '',
-        patient_mrn: '',
+        to: '',
+        mrn: '',
         urgency: 'routine',
-        clinical_question: ''
+        question: ''
       });
       
-      // Success message
       alert('✅ Consultation request submitted successfully!');
       
     } catch (error) {
@@ -61,8 +61,8 @@ const RequestConsultation = ({ loggedInUser, departments, handleConsultationSubm
             To Department <span className="text-red-500">*</span>
           </label>
           <select
-            value={formData.to_department}
-            onChange={(e) => setFormData({...formData, to_department: e.target.value})}
+            value={formData.to}
+            onChange={(e) => setFormData({...formData, to: e.target.value})}
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
           >
             <option value="">Select department...</option>
@@ -78,8 +78,8 @@ const RequestConsultation = ({ loggedInUser, departments, handleConsultationSubm
           </label>
           <input
             type="text"
-            value={formData.patient_mrn}
-            onChange={(e) => setFormData({...formData, patient_mrn: e.target.value})}
+            value={formData.mrn}
+            onChange={(e) => setFormData({...formData, mrn: e.target.value})}
             placeholder="Medical Record Number"
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
           />
@@ -114,15 +114,15 @@ const RequestConsultation = ({ loggedInUser, departments, handleConsultationSubm
             Clinical Question <span className="text-red-500">*</span>
           </label>
           <textarea
-            value={formData.clinical_question}
-            onChange={(e) => setFormData({...formData, clinical_question: e.target.value})}
+            value={formData.question}
+            onChange={(e) => setFormData({...formData, question: e.target.value})}
             placeholder="Describe the clinical situation and your question..."
             rows="4"
             maxLength="500"
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 resize-none"
           />
           <div className="text-right text-sm text-gray-500 mt-1">
-            {formData.clinical_question.length}/500
+            {formData.question.length}/500
           </div>
         </div>
 
