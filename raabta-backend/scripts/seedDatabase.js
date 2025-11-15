@@ -70,6 +70,9 @@ const seedDatabase = async () => {
   try {
     console.log('🌱 Starting database seeding...');
 
+    // ADD THIS LINE:
+    await mongoose.connection.db.dropCollection('users').catch(() => {});
+    
     // Clear existing data
     await User.deleteMany({});
     await Consultation.deleteMany({});
