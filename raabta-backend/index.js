@@ -9,12 +9,15 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' 
-      ? 'your-frontend-url.vercel.app' 
-      : 'http://localhost:5173',
+    origin: 'https://raabta-pk.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE']
   }
 });
+
+app.use(cors({
+  origin: 'https://raabta-pk.vercel.app',
+  credentials: true
+}));
 
 // Middleware
 app.use(cors());
