@@ -1,54 +1,89 @@
 const mongoose = require('mongoose');
 
 const consultationSchema = new mongoose.Schema({
-  from: {
+  // Department Information
+  from_department: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  to: {
+  to_department: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  mrn: {
+  
+  // Patient Information
+  patient_mrn: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
+  
+  // Consultation Details
   urgency: {
     type: String,
     enum: ['stat', 'urgent', 'routine'],
-    required: true
+    default: 'routine'
   },
-  question: {
+  clinical_question: {
     type: String,
     required: true,
     maxlength: 500
   },
+  
+  // Status Tracking
   status: {
     type: String,
     enum: ['pending', 'accepted', 'declined', 'completed'],
     default: 'pending'
   },
-  requestedBy: {
+  
+  // Response Details
+  response_message: {
+    type: String,
+    maxlength: 1000
+  },
+  estimated_time: {
+    type: String
+  },
+  
+  // User References
+  requested_by: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  response: {
+  requested_by_name: {
     type: String,
-    maxlength: 1000
+    required: true
   },
-  respondedBy: {
+  responded_by: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  responseTime: {
+  responded_by_name: {
+    type: String
+  },
+  
+  // Timestamps
+  created_at: {
+    type: Date,
+    default: Date.now
+  },
+  response_time: {
     type: Date
   },
-  estimatedTime: {
-    type: String
+  viewed_at: {
+    type: Date
   }
 }, {
   timestamps: true
 });
+
+// Indexes for faster queries
+consultationSchema.index({ from_department: 1, status: 1 });
+consultationSchema.index({ to_department: 1, status: 1 });
+consultationSchema.index({ created_at: -1 });
 
 module.exports = mongoose.model('Consultation', consultationSchema);
